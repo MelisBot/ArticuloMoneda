@@ -1,0 +1,27 @@
+﻿@model ML.Articulo
+@{
+    ViewBag.Title = "Formulario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Agregar Artículo</h2>
+
+@using (Html.BeginForm("Formulario", "Articulo", FormMethod.Post))
+{
+    <div class="form-group">
+        @Html.Label("Nombre")
+        @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control" })
+    </div>
+
+    <div class="form-group">
+        @Html.Label("Precio (MXN)")
+        @Html.TextBoxFor(m => m.Precio, new { @class = "form-control", type = "number", step = "0.01", id = "PrecioMXN" })
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar</button>
+}
+
+
+
+
+

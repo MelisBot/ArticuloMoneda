@@ -1,0 +1,94 @@
+﻿@model ML.Articulo
+@{
+    ViewBag.Title = "GetAll";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Lista de Artículos</h2>
+
+<div class="container">
+    <div class="row mb-3">
+        <div class="col-12">
+            <a href="@Url.Action("Formulario", "Articulo")" class="btn btn-success">
+                Agregar Artículo
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            @if (Model.Articulos != null)
+            {
+                <table class="table" id="tablaArticulos">
+                    <thead class="alert-info">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Precio (MXN)</th>
+                            <th>País</th>
+                            <th>Fecha</th>
+                            <th>Precio Convertido</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ML.Articulo articulo in Model.Articulos)
+                        {
+                            <tr data-precio="@articulo.Precio">
+                                <td>@articulo.Nombre</td>
+                                <td>@articulo.Precio</td>
+                                <td>
+                                    @Html.DropDownList("PaisSelect",
+                                             new SelectList(new[] {
+                                            new { Value = "USD", Text = "Estados Unidos" },
+                                            new { Value = "EUR", Text = "España" }
+                             }, "Value", "Text"),
+                                             "Seleccione un país",
+                                             new { @class = "form-control pais-select" })
+                                </td>
+                                <td>
+                                    <input type="date" class="form-control fecha-select" />
+                                </td>
+                                <!--Monstrar el precio convertido-->
+                                <td class="precio-convertido">-</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    async function convertirFila(row) { //Esperamos la respuesta de la API por eso usamos async
+        var precioMXN = parseFloat($(row).data("precio"));
+        var monedaDestino = $(row).find(".pais-select").val();
+        var fecha = $(row).find(".fecha-select").val();
+
+        if (precioMXN && monedaDestino && fecha) {
+            try {
+                const response = await $.ajax({
+                    url: "https://api.fxratesapi.com/convert", //pasamos la ruta de la api
+                    type: "GET",
+                    data: {
+                        format: "JSON",
+                        amount: precioMXN,
+                        from: "MXN",
+                        to: monedaDestino,
+                        date: fecha
+                    }
+                });
+
+                $(row).find(".precio-convertido").text(response.result.toFixed(2) + " " + monedaDestino);
+            } catch (error) {
+                $(row).find(".precio-convertido").text("Error");
+            }
+        }
+    }
+
+    // Cada vez que cambie país o fecha, recalculamos
+    $(document).on("change", ".pais-select, .fecha-select", function () {
+        var row = $(this).closest("tr");
+        convertirFila(row);
+    });
+</script>
